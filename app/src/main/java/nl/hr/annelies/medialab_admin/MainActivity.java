@@ -115,6 +115,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if(hasMessage == true) {
             System.out.println("Hasmessage");
+            // Now that you know it has a message, search the storage for the message with the same ID.
+            // Download that message
+            // use that path as the source
+            // play the recording
         } else {
             System.out.println("no message yet");
             Log.i("Hello", "You clicked item: " + id + "at position: " + position);
