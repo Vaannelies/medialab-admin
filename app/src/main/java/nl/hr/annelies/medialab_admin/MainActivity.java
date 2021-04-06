@@ -15,13 +15,16 @@ import android.widget.Button;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.protobuf.Any;
@@ -56,53 +59,62 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
-        ids = new ArrayList<String>() ;
+
         System.out.println(db.collection("kids").get());
 
-        db.collection("kids").get()
-            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-               @Override
-               public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                   if (task.isSuccessful()) {
-                       for (QueryDocumentSnapshot document : task.getResult()) {
-                           String idString = document.getData().get("id").toString();
-                           Log.d("STRING ID", idString);
-                           ids.add(idString);
-                           Log.d("DOCUMENT", document.getId() + " => " + document.getData().get("id"));
-                       }
+        db.collection("kids").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                if (error != null) {
+                    Log.w("ERROR", "Listen failed.", error);
+                    return;
+                }
+                ids = new ArrayList<String>();
 
-                       listView = findViewById(R.id.list_view);
-                       listView.setOnItemClickListener(MainActivity.this);
-                       listView.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, ids));
+                List<String> cities = new ArrayList<>();
+                for (QueryDocumentSnapshot document : value) {
+                    if (document.get("id") != null) {
+                        String idString = document.getData().get("id").toString();
+                        Log.d("STRING ID", idString);
+                        ids.add(idString);
+                    }
 
-                   } else {
-                       Log.w("ERROR", "Error getting documents.", task.getException());
-                   }
-               }
-           });
+                    Log.d("DOCUMENT", document.getId() + " => " + document.getData().get("id"));
 
-//        JSONArray idList = new JSONArray(db.collection("kids").get());
+                }
+                Log.d("DATA", "Current cites in CA: " + cities);
 
-
-
-
+                listView = findViewById(R.id.list_view);
+                listView.setOnItemClickListener(MainActivity.this);
+                listView.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, ids));
+            }
+        });
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.i("Hello", "You clicked item: " + id + "at position: " + position);
-        System.out.println(ids.get(position));
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setTitle("Weet u zeker dat dit kind gevonden is?");
-        builder.setMessage("U staat op het punt om bij de ouders te melden dat dit kind gevonden is: " + ids.get(position));
-        builder.setPositiveButton("Kind is gevonden",
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+        if(db.collection("kids").document(ids.get(position)).get().getResult().contains("hasMessage")) {
+            System.out.println("Hasmessage");
+        } else {
+            System.out.println("no message yet");
+            Log.i("Hello", "You clicked item: " + id + "at position: " + position);
+            System.out.println(ids.get(position));
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(true);
+            builder.setTitle("Weet u zeker dat dit kind gevonden is?");
+            builder.setMessage("U staat op het punt om bij de ouders te melden dat dit kind gevonden is: " + ids.get(position));
+            builder.setPositiveButton("Kind is gevonden",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 //                                NavHostFragment.findNavController(FirstFragment.this)
 //                                    .navigate(R.id.action_FirstFragment_to_SecondFragment);
-                          view.findViewById(R.id.list_item).setBackgroundColor(Color.parseColor("#00FF00"));
+
+                            System.out.println("Hallo " + db.collection("kids").document(ids.get(position)).get());
+//                        if(hoi
+//                        if(hoi.get("found").equals(true))
+                            view.findViewById(R.id.list_item).setBackgroundColor(Color.parseColor("#00FF00"));
+                            db.collection("kids").document(ids.get(position)).update("found", true);
 //                        SharedPreferences.Editor editor = sharedPreferences.edit();
 //                        editor.putBoolean("kidLost", true);
 //                        editor.apply();
@@ -110,16 +122,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                        buttonFound.setVisibility(View.VISIBLE);
 //
 //                        startActivity(new Intent(getActivity(), MicActivity.class));
-                    }
-                });
-        builder.setNegativeButton("Annuleren", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
+                        }
+                    });
+            builder.setNegativeButton("Annuleren", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
 
-        AlertDialog dialog = builder.create();
-        dialog.show();
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+
     }
 
 //
