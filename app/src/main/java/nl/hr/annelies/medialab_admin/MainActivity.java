@@ -22,6 +22,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -45,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     FirebaseFirestore db;
     ListView listView;
     ArrayList<String> ids;
+    boolean hasMessage = false;
 
 
 
@@ -93,7 +96,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if(db.collection("kids").document(ids.get(position)).get().getResult().contains("hasMessage")) {
+        db.collection("kids").document(ids.get(position)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if(doc.contains("hasMessage")) {
+                        System.out.println(doc.getBoolean("hasMessage"));
+                       hasMessage = doc.getBoolean("hasMessage");
+                    } else {
+                         Log.d("ERROR", "Doc doesn't exist");
+                    }
+                } else {
+                    Log.d("ERROR", "Error: ", task.getException());
+                }
+            }
+        });
+
+        if(hasMessage == true) {
             System.out.println("Hasmessage");
         } else {
             System.out.println("no message yet");
