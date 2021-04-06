@@ -1,8 +1,15 @@
 package nl.hr.annelies.medialab_admin;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -25,7 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     Location currentLocation;
 
@@ -34,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     Integer id;
     FirebaseFirestore db;
     ListView listView;
+    ArrayList<String> ids;
 
 
 
@@ -48,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
-
+        ids = new ArrayList<String>() ;
         System.out.println(db.collection("kids").get());
 
         db.collection("kids").get()
@@ -56,9 +64,6 @@ public class MainActivity extends AppCompatActivity {
                @Override
                public void onComplete(@NonNull Task<QuerySnapshot> task) {
                    if (task.isSuccessful()) {
-
-                       ArrayList<String> ids = new ArrayList<String>() ;
-
                        for (QueryDocumentSnapshot document : task.getResult()) {
                            String idString = document.getData().get("id").toString();
                            Log.d("STRING ID", idString);
@@ -67,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
                        }
 
                        listView = findViewById(R.id.list_view);
+                       listView.setOnItemClickListener(MainActivity.this);
                        listView.setAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.list_item, ids));
-
 
                    } else {
                        Log.w("ERROR", "Error getting documents.", task.getException());
@@ -81,6 +86,40 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Log.i("Hello", "You clicked item: " + id + "at position: " + position);
+        System.out.println(ids.get(position));
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle("Weet u zeker dat dit kind gevonden is?");
+        builder.setMessage("U staat op het punt om bij de ouders te melden dat dit kind gevonden is: " + ids.get(position));
+        builder.setPositiveButton("Kind is gevonden",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+//                                NavHostFragment.findNavController(FirstFragment.this)
+//                                    .navigate(R.id.action_FirstFragment_to_SecondFragment);
+                          view.findViewById(R.id.list_item).setBackgroundColor(Color.parseColor("#00FF00"));
+//                        SharedPreferences.Editor editor = sharedPreferences.edit();
+//                        editor.putBoolean("kidLost", true);
+//                        editor.apply();
+//                        buttonLost.setVisibility(View.GONE);
+//                        buttonFound.setVisibility(View.VISIBLE);
+//
+//                        startActivity(new Intent(getActivity(), MicActivity.class));
+                    }
+                });
+        builder.setNegativeButton("Annuleren", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 //
