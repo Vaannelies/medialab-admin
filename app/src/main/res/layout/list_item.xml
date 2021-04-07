@@ -44,6 +44,21 @@
 
         />
 
+        <Button
+        xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:id="@+id/button_found"
+        android:text="Gevonden"
+        android:textAlignment="center"
+        android:textSize="14dp"
+
+        />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

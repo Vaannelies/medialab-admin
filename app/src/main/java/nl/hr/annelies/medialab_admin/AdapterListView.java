@@ -30,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 public class AdapterListView extends BaseAdapter {
 
     Context context;
@@ -79,17 +82,17 @@ public class AdapterListView extends BaseAdapter {
 
             convertView = LayoutInflater.from(context).inflate(R.layout.list_item, parent, false);
 
-
             TextView id = convertView.findViewById(R.id.item_id);
             Button playMessage = convertView.findViewById(R.id.item_has_message);
-            Log.i("adapter", arr.get(position).getId());
-//        Log.i("adapter", name);
+            Button markFound = convertView.findViewById(R.id.button_found);
 
-
+            playMessage.setVisibility(GONE);
 
             id.setText(arr.get(position).getId());
             if(arr.get(position).getFound() == true) {
-                id.setBackgroundColor(Color.parseColor("#00FF00"));
+                convertView.setBackgroundColor(Color.parseColor("#00FF00"));
+                markFound.setVisibility(GONE);
+                playMessage.setVisibility(VISIBLE);
             }
 
             if(arr.get(position).getHasMessage() == true) {
@@ -100,6 +103,53 @@ public class AdapterListView extends BaseAdapter {
                 playMessage.setEnabled(false);
             }
 //
+            markFound.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        db.collection("kids").document(arr.get(position).getId()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if(task.isSuccessful()) {
+                                    DocumentSnapshot doc = task.getResult();
+                                    if(doc.contains("hasMessage")) {
+                                        System.out.println(doc.getBoolean("hasMessage"));
+                                        dHasMessage = doc.getBoolean("hasMessage");
+                                    } else {
+                                        Log.d("ERROR", "Doc doesn't exist");
+                                    }
+                                } else {
+                                    Log.d("ERROR", "Error: ", task.getException());
+                                }
+                            }
+                        });
+
+                        System.out.println("no message yet");
+                        Log.i("Hello", "You clicked item: " + id + "at position: " + position);
+                        System.out.println(arr.get(position).getId());
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setCancelable(true)
+                                .setTitle("Weet u zeker dat dit kind gevonden is?")
+                                .setMessage("U staat op het punt om bij de ouders te melden dat dit kind gevonden is: " + arr.get(position).getId())
+                                .setPositiveButton("Kind is gevonden",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                System.out.println("Hallo " + db.collection("kids").document(arr.get(position).getId()).get());
+                                                db.collection("kids").document(arr.get(position).getId()).update("found", true);
+//
+                                            }
+                                        });
+                        builder.setNegativeButton("Annuleren", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        });
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                });
+
 //            @Override
 //            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //
@@ -129,96 +179,16 @@ public class AdapterListView extends BaseAdapter {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    //                    storage.getReference().child("audio/"+ arr.get(position).getId() +".gp3").getDownloadUrl().addOnSuccessListener({
-//                            MediaPlayer mediaPlayer = new MediaPlayer();
-//                            mediaPlayer.setDataSource(it.toString())
-//                            mediaPlayer.setOnPreparedListener { player ->
-//                            player.start()
-//                    }
-//                            mediaPlayer.prepareAsync()
-//                    })
-//                    try {
-////                        localFile = File.createTempFile("audio", ".3gp");
-////                        System.out.println("LOOOcalfile: " + localFile);
-//                        playAudio(v, arr.get(position).getId());
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             });
+        return convertView;
+}
 
-            if(arr.get(position).getHasMessage() == false) {
-                convertView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        db.collection("kids").document(arr.get(position).getId()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                            @Override
-                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if(task.isSuccessful()) {
-                                    DocumentSnapshot doc = task.getResult();
-                                    if(doc.contains("hasMessage")) {
-                                        System.out.println(doc.getBoolean("hasMessage"));
-                                        dHasMessage = doc.getBoolean("hasMessage");
-                                    } else {
-                                        Log.d("ERROR", "Doc doesn't exist");
-                                    }
-                                } else {
-                                    Log.d("ERROR", "Error: ", task.getException());
-                                }
-                            }
-                        });
-
-                            System.out.println("no message yet");
-                            Log.i("Hello", "You clicked item: " + id + "at position: " + position);
-                            System.out.println(arr.get(position).getId());
-                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setCancelable(true);
-                            builder.setTitle("Weet u zeker dat dit kind gevonden is?");
-                            builder.setMessage("U staat op het punt om bij de ouders te melden dat dit kind gevonden is: " + arr.get(position).getId());
-                            builder.setPositiveButton("Kind is gevonden",
-                                    new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-//                                NavHostFragment.findNavController(FirstFragment.this)
-//                                    .navigate(R.id.action_FirstFragment_to_SecondFragment);
-
-                                            System.out.println("Hallo " + db.collection("kids").document(arr.get(position).getId()).get());
-                                            db.collection("kids").document(arr.get(position).getId()).update("found", true);
-//
-                                        }
-                                    });
-                            builder.setNegativeButton("Annuleren", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            });
-
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-
-
-                    }
-//                @Override
-//                public void onClick(View v) {
-//                    Intent intent = new Intent(context, DetailActivity.class);
-//                    intent.putExtra("name", arr.get(position).getName());
-//                    intent.putExtra("id", arr.get(position).getId());
-//                    context.startActivity(intent);
-//                }
-                });
-            }
-
-
-
-
-            return convertView;
-        }
 
         public void playAudio(View view) throws  IOException
         {
             mediaPlayer = new MediaPlayer();
-//            mediaPlayer.setDataSource(fileName);
-            mediaPlayer.setDataSource("gs://medialab-76b30.appspot.com/o/Audio/329004.3gp");
+            mediaPlayer.setDataSource(fileName);
             mediaPlayer.prepare();
             mediaPlayer.start();
         }
