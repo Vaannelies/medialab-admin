@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!--<LinearLayout android:layout_height="200dp"-->
-<!--    android:layout_width="200dp"-->
-<!--    xmlns:android="http://schemas.android.com/apk/res/android"-->
-<!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-<!--    android:orientation="horizontal">-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:outlineAmbientShadowColor="@color/black">
 
 <TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -14,12 +17,36 @@
     app:layout_constraintTop_toTopOf="parent"
     android:layout_width="match_parent"
     android:layout_height="50dp"
-    android:id="@+id/list_item"
+    android:id="@+id/item_id"
     android:text="TextView"
     android:textSize="30dp"
     android:gravity="center"
     android:textAlignment="center"
     />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp">
+
+        <Button
+        xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:id="@+id/item_has_message"
+        android:text="Bericht afspelen"
+        android:textAlignment="center"
+        android:textSize="14dp"
+
+        />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
 <!--    android:id="@+id/textView"-->
 
 <!--<TextView-->
