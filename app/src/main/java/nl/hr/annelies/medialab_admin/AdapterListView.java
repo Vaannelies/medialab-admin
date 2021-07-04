@@ -90,13 +90,13 @@ public class AdapterListView extends BaseAdapter {
 
             id.setText(arr.get(position).getId());
             if(arr.get(position).getFound() == true) {
-                convertView.setBackgroundColor(Color.parseColor("#00FF00"));
+                id.setBackgroundColor(Color.parseColor("#a9ff9c"));
                 markFound.setVisibility(GONE);
                 playMessage.setVisibility(VISIBLE);
             }
 
             if(arr.get(position).getHasMessage() == true) {
-                playMessage.setText("Bericht");
+                playMessage.setText("Bericht afspelen");
                 playMessage.setEnabled(true);
             } else {
                 playMessage.setText("Nog geen bericht");
